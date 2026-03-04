@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seriespels-hanterare - Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+        }
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        input[type="number"], input[type="text"], select {
+            border: 1px solid #cbd5e1;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            outline-color: var(--primary);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #f1f5f9;
+            text-align: left;
+            padding: 0.75rem;
+            font-weight: 600;
+        }
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .win { color: #16a34a; font-weight: bold; }
+        .draw { color: #d97706; font-weight: bold; }
+        .loss { color: #dc2626; font-weight: bold; }
+        
+        .mode-badge {
+            transition: all 0.3s ease;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            .card { box-shadow: none !important; border: 1px solid #eee !important; margin-bottom: 2rem !important; }
+            .page-break { page-break-after: always; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center no-print">
+            <h1 class="text-4xl font-extrabold text-blue-900">Seriespels-hanterare Pro</h1>
+            <p class="text-slate-500 mt-2">Hantering av divisioner och resultat</p>
+            
+            <!-- Lägesväljare -->
+            <div id="mode-selector" class="mt-6 inline-flex p-1 bg-slate-200 rounded-lg hidden">
+                <button onclick="toggleViewMode('admin')" id="btn-admin" class="px-4 py-2 rounded-md font-bold transition-all bg-white shadow-sm text-blue-600">
+                    Administratör
+                </button>
+                <button onclick="toggleViewMode('public')" id="btn-public" class="px-4 py-2 rounded-md font-bold transition-all text-slate-600">
+                    Publikvy
+                </button>
+            </div>
+        </header>
+
+        <!-- Steg 1: Skapa Divisioner och Lag -->
+        <div id="setup-section" class="no-print">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Skapa Division -->
+                <div class="card lg:col-span-1">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                        Divisioner
+                    </h2>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex gap-2">
+                            <input type="text" id="div-input" placeholder="Namn (t.ex. Div 1)" class="flex-1">
+                            <button onclick="addDivision()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-medium">Skapa</button>
+                        </div>
+                        <div id="div-list" class="space-y-2 mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Skapa Lag och koppla till Division -->
+                <div class="card lg:col-span-2">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                        Lägg till lag
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Lagnamn</label>
+                            <input type="text" id="team-input" placeholder="Namn på laget">
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Välj Division</label>
+                            <div class="flex gap-2">
+                                <select id="div-select" class="flex-1">
+                                    <option value="">Välj division...</option>
+                                </select>
+                                <button onclick="addTeam()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold">Lägg till</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="division-preview-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+                    <div id="start-all-container" class="mt-8 border-t pt-6 hidden text-center">
+                        <button onclick="generateAllLeagues()" class="w-full max-w-md bg-blue-800 text-white py-4 rounded-xl font-black text-xl hover:bg-blue-900 shadow-lg transition-transform active:scale-95">
+                            STARTA ALLA SERIESPEL
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Steg 2: Aktivt Seriespel -->
+        <div id="active-leagues-section" class="hidden space-y-12 pb-20">
+            <!-- Divisioner genereras här -->
+        </div>
+
+        <div id="global-actions" class="hidden fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t no-print flex justify-center gap-4 z-50">
+            <button onclick="window.print()" class="bg-slate-800 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                Skriv ut
+            </button>
+            <button onclick="resetEverything()" class="bg-red-50 text-red-600 px-6 py-2 rounded-lg font-bold border border-red-100 hover:bg-red-100 text-sm">
+                Nollställ allt
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let divisions = []; 
+        let viewMode = 'admin'; // 'admin' eller 'public'
+
+        // --- VY-LOGIK ---
+
+        function toggleViewMode(mode) {
+            viewMode = mode;
+            const btnAdmin = document.getElementById('btn-admin');
+            const btnPublic = document.getElementById('btn-public');
+
+            if (mode === 'public') {
+                btnPublic.className = "px-4 py-2 rounded-md font-bold transition-all bg-white shadow-sm text-blue-600";
+                btnAdmin.className = "px-4 py-2 rounded-md font-bold transition-all text-slate-600";
+            } else {
+                btnAdmin.className = "px-4 py-2 rounded-md font-bold transition-all bg-white shadow-sm text-blue-600";
+                btnPublic.className = "px-4 py-2 rounded-md font-bold transition-all text-slate-600";
+            }
+
+            renderActiveLeagues();
+        }
+
+        // --- SETUP LOGIC ---
+
+        function addDivision() {
+            const input = document.getElementById('div-input');
+            const name = input.value.trim();
+            if (name) {
+                divisions.push({
+                    id: Date.now(),
+                    name: name,
+                    meetings: 1,
+                    teams: [],
+                    rounds: []
+                });
+                input.value = '';
+                updateUI();
+            }
+        }
+
+        function removeDivision(id) {
+            divisions = divisions.filter(d => d.id !== id);
+            updateUI();
+        }
+
+        function addTeam() {
+            const teamInput = document.getElementById('team-input');
+            const divSelect = document.getElementById('div-select');
+            const teamName = teamInput.value.trim();
+            const divId = parseInt(divSelect.value);
+
+            if (!teamName || !divId) return;
+
+            const div = divisions.find(d => d.id === divId);
+            if (div && !div.teams.includes(teamName)) {
+                div.teams.push(teamName);
+                teamInput.value = '';
+                updateUI();
+            }
+        }
+
+        function removeTeamFromDiv(divId, teamName) {
+            const div = divisions.find(d => d.id === divId);
+            if (div) {
+                div.teams = div.teams.filter(t => t !== teamName);
+                updateUI();
+            }
+        }
+
+        function updateMeetings(divId, val) {
+            const div = divisions.find(d => d.id === divId);
+            if (div) div.meetings = parseInt(val) || 1;
+        }
+
+        function updateUI() {
+            const divList = document.getElementById('div-list');
+            divList.innerHTML = divisions.map(d => `
+                <div class="flex items-center justify-between p-2 bg-slate-50 rounded border">
+                    <span class="font-medium">${d.name}</span>
+                    <button onclick="removeDivision(${d.id})" class="text-red-400 hover:text-red-600">&times;</button>
+                </div>
+            `).join('');
+
+            const divSelect = document.getElementById('div-select');
+            const currentVal = divSelect.value;
+            divSelect.innerHTML = '<option value="">Välj division...</option>' + 
+                divisions.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            divSelect.value = currentVal;
+
+            const previewContainer = document.getElementById('division-preview-container');
+            previewContainer.innerHTML = divisions.map(d => `
+                <div class="border rounded-lg p-3 bg-slate-50">
+                    <div class="flex justify-between items-center mb-2 border-b pb-1">
+                        <span class="font-bold text-blue-800">${d.name}</span>
+                        <span class="text-xs bg-blue-100 px-2 py-0.5 rounded-full">${d.teams.length} lag</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1 mb-3 min-h-[40px]">
+                        ${d.teams.map(t => `
+                            <span class="bg-white border px-2 py-0.5 rounded text-xs flex items-center gap-1">
+                                ${t} <button onclick="removeTeamFromDiv(${d.id}, '${t}')" class="text-red-400 font-bold">&times;</button>
+                            </span>
+                        `).join('')}
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <label>Antal möten:</label>
+                        <input type="number" value="${d.meetings}" min="1" max="10" 
+                            class="w-10 p-1 text-center" onchange="updateMeetings(${d.id}, this.value)">
+                    </div>
+                </div>
+            `).join('');
+
+            const canStart = divisions.some(d => d.teams.length >= 2);
+            document.getElementById('start-all-container').classList.toggle('hidden', !canStart);
+        }
+
+        // --- LEAGUE GENERATION ---
+
+        function generateAllLeagues() {
+            divisions.forEach(div => {
+                if (div.teams.length < 2) return;
+                
+                const tempTeams = [...div.teams];
+                if (tempTeams.length % 2 !== 0) tempTeams.push(null);
+
+                const n = tempTeams.length;
+                const roundsPerMeeting = n - 1;
+                let baseRounds = [];
+
+                for (let r = 0; r < roundsPerMeeting; r++) {
+                    let roundMatches = [];
+                    for (let i = 0; i < n / 2; i++) {
+                        const home = tempTeams[i], away = tempTeams[n - 1 - i];
+                        if (home !== null && away !== null) roundMatches.push({ home, away, homeScore: null, awayScore: null });
+                    }
+                    baseRounds.push(roundMatches);
+                    tempTeams.splice(1, 0, tempTeams.pop());
+                }
+
+                div.rounds = [];
+                for (let m = 0; m < div.meetings; m++) {
+                    baseRounds.forEach(round => {
+                        div.rounds.push(round.map(match => ({
+                            home: m % 2 === 0 ? match.home : match.away,
+                            away: m % 2 === 0 ? match.away : match.home,
+                            homeScore: null, awayScore: null
+                        })));
+                    });
+                }
+            });
+
+            document.getElementById('setup-section').classList.add('hidden');
+            document.getElementById('mode-selector').classList.remove('hidden');
+            document.getElementById('active-leagues-section').classList.remove('hidden');
+            document.getElementById('global-actions').classList.remove('hidden');
+            
+            renderActiveLeagues();
+        }
+
+        function renderActiveLeagues() {
+            const container = document.getElementById('active-leagues-section');
+            container.innerHTML = '';
+
+            divisions.forEach(div => {
+                if (div.rounds.length === 0) return;
+
+                const divWrapper = document.createElement('div');
+                divWrapper.className = 'page-break animate-in fade-in duration-500';
+                divWrapper.innerHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <h2 class="text-3xl font-black text-slate-800 uppercase tracking-tight">${div.name}</h2>
+                        <div class="h-1 flex-1 bg-slate-200 rounded-full"></div>
+                        ${viewMode === 'public' ? '<span class="text-xs font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">PUBLIKVY</span>' : ''}
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-1">
+                            <div class="card sticky top-8">
+                                <h3 class="font-bold mb-4 flex items-center gap-2 text-slate-700">
+                                    <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                    Tabell
+                                </h3>
+                                <div class="overflow-hidden rounded-lg border">
+                                    <table class="text-sm">
+                                        <thead>
+                                            <tr>
+                                                <th class="p-2 text-xs w-8">#</th>
+                                                <th class="p-2">Lag</th>
+                                                <th class="p-2 text-center">S</th>
+                                                <th class="p-2 text-center">P</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-body-${div.id}"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="rounds-grid-${div.id}"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(divWrapper);
+                updateDivisionTable(div.id);
+                renderDivisionRounds(div.id);
+            });
+        }
+
+        function renderDivisionRounds(divId) {
+            const div = divisions.find(d => d.id === divId);
+            const grid = document.getElementById(`rounds-grid-${divId}`);
+            
+            grid.innerHTML = div.rounds.map((round, rIdx) => {
+                const isCompleted = round.every(m => m.homeScore !== null && m.awayScore !== null);
+                
+                return `
+                <div class="bg-white rounded-xl border shadow-sm overflow-hidden flex flex-col ${isCompleted ? 'opacity-80' : ''}">
+                    <div class="bg-slate-50 border-b px-4 py-2 text-xs font-bold text-slate-500 flex justify-between items-center">
+                        <span>OMGÅNG ${rIdx + 1}</span>
+                        ${isCompleted ? '<span class="text-green-600 bg-green-50 px-1.5 py-0.5 rounded">KLAR</span>' : ''}
+                    </div>
+                    <div class="p-3 space-y-3 flex-1">
+                        ${round.map((m, mIdx) => {
+                            const hasResult = m.homeScore !== null && m.awayScore !== null;
+                            
+                            return `
+                            <div class="flex items-center gap-2">
+                                <span class="flex-1 text-right truncate font-medium text-slate-700">${m.home}</span>
+                                <div class="flex items-center gap-1 min-w-[80px] justify-center">
+                                    ${viewMode === 'admin' ? `
+                                        <input type="number" value="${m.homeScore !== null ? m.homeScore : ''}" 
+                                            class="w-10 h-8 text-center p-0 border rounded focus:ring-2 focus:ring-blue-100" 
+                                            onchange="updateScore(${divId}, ${rIdx}, ${mIdx}, 'home', this.value)">
+                                        <span class="text-slate-300">-</span>
+                                        <input type="number" value="${m.awayScore !== null ? m.awayScore : ''}" 
+                                            class="w-10 h-8 text-center p-0 border rounded focus:ring-2 focus:ring-blue-100" 
+                                            onchange="updateScore(${divId}, ${rIdx}, ${mIdx}, 'away', this.value)">
+                                    ` : `
+                                        <div class="flex items-center gap-2 font-black text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                                            <span>${m.homeScore !== null ? m.homeScore : '-'}</span>
+                                            <span class="text-blue-200">:</span>
+                                            <span>${m.awayScore !== null ? m.awayScore : '-'}</span>
+                                        </div>
+                                    `}
+                                </div>
+                                <span class="flex-1 text-left truncate font-medium text-slate-700">${m.away}</span>
+                            </div>
+                        `}).join('')}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function updateScore(divId, rIdx, mIdx, side, value) {
+            const div = divisions.find(d => d.id === divId);
+            const score = value === '' ? null : parseInt(value);
+            if (side === 'home') div.rounds[rIdx][mIdx].homeScore = score;
+            else div.rounds[rIdx][mIdx].awayScore = score;
+            updateDivisionTable(divId);
+            
+            // Vi behöver bara rendera om rundorna om vi vill visa "KLAR"-statusen direkt
+            renderDivisionRounds(divId);
+        }
+
+        function updateDivisionTable(divId) {
+            const div = divisions.find(d => d.id === divId);
+            let stats = {};
+            div.teams.forEach(t => stats[t] = { played: 0, goalsFor: 0, goalsAgainst: 0, points: 0 });
+
+            div.rounds.forEach(round => {
+                round.forEach(m => {
+                    if (m.homeScore !== null && m.awayScore !== null) {
+                        const h = m.home, a = m.away, hs = m.homeScore, as = m.awayScore;
+                        stats[h].played++; stats[a].played++;
+                        stats[h].goalsFor += hs; stats[h].goalsAgainst += as;
+                        stats[a].goalsFor += as; stats[a].goalsAgainst += hs;
+
+                        if (hs > as) stats[h].points += 2;
+                        else if (as > hs) stats[a].points += 2;
+                        else { stats[h].points += 1; stats[a].points += 1; }
+                    }
+                });
+            });
+
+            const sorted = Object.keys(stats).map(name => ({ name, ...stats[name] }))
+                .sort((a, b) => b.points - a.points || (b.goalsFor - b.goalsAgainst) - (a.goalsFor - a.goalsAgainst) || b.goalsFor - a.goalsFor);
+
+            const tbody = document.getElementById(`table-body-${divId}`);
+            if (tbody) {
+                tbody.innerHTML = sorted.map((t, i) => `
+                    <tr class="${i === 0 ? 'bg-yellow-50/50' : ''} hover:bg-slate-50 transition-colors">
+                        <td class="p-2 font-bold text-slate-400 text-center border-r">${i + 1}</td>
+                        <td class="p-2 font-bold truncate max-w-[120px]">${t.name}</td>
+                        <td class="p-2 text-center text-slate-500">${t.played}</td>
+                        <td class="p-2 text-center font-bold text-blue-700 bg-blue-50/30">${t.points}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function resetEverything() {
+            if (confirm("Detta tar bort alla divisioner, lag och resultat. Är du säker?")) {
+                divisions = [];
+                viewMode = 'admin';
+                document.getElementById('setup-section').classList.remove('hidden');
+                document.getElementById('mode-selector').classList.add('hidden');
+                document.getElementById('active-leagues-section').classList.add('hidden');
+                document.getElementById('global-actions').classList.add('hidden');
+                updateUI();
+            }
+        }
+    </script>
+</body>
+</html>
