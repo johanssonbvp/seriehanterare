@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pétanque Pro – Seriespelet</title>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js" defer></script>
 <style>
   :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e2a;--border:#252a38;--accent:#6366f1;--accent2:#818cf8;--gold:#f59e0b;--green:#22c55e;--red:#ef4444;--text:#e2e8f0;--muted:#64748b;}
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -70,7 +68,6 @@
   .empty-state .icon{font-size:3.5rem;margin-bottom:1rem;}
   .empty-state h2{font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;color:var(--text);}
   .loading{text-align:center;padding:4rem;color:var(--muted);font-size:0.9rem;}
-  @media print{.sidebar{display:none!important;}body{background:white;color:black;}}
 </style>
 </head>
 <body>
@@ -90,6 +87,9 @@
   </main>
 </div>
 
+<!-- Firebase laddas sist i body, innan script -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAw-cizjTdKHd3-FOmxyaXvD-vQTum-NSk",
@@ -103,17 +103,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Lyssnar i realtid — uppdateras direkt när admin sparar
 db.ref('petanque').on('value', snap => {
-  const divisions = snap.val() || [];
-  render(divisions);
+  render(snap.val() || []);
 });
 
 function render(divisions) {
   const cont = document.getElementById('content');
   cont.innerHTML = '';
   const active = divisions.filter(d => d.rounds && d.rounds.length > 0);
-
   if (active.length === 0) {
     cont.innerHTML = `
       <div class="empty-state">
@@ -125,21 +122,16 @@ function render(divisions) {
     document.getElementById('nav-divisions').innerHTML = '';
     return;
   }
-
   document.getElementById('nav-div-header').classList.remove('hidden');
   document.getElementById('nav-divisions').innerHTML = active.map(d => `
-    <div class="nav-item" id="nav-div-${d.id}" onclick="scrollTo('div-block-${d.id}','nav-div-${d.id}')">
+    <div class="nav-item" id="nav-div-${d.id}" onclick="navTo('div-block-${d.id}','nav-div-${d.id}')">
       <div class="nav-dot"></div> ${d.name}
     </div>`).join('');
-
   active.forEach(div => {
     const block = document.createElement('div');
     block.className = 'division-block'; block.id = 'div-block-' + div.id;
     block.innerHTML = `
-      <div class="division-header">
-        <h2>${div.name}</h2><div class="line"></div>
-        <span class="badge-gold">PUBLIKVY</span>
-      </div>
+      <div class="division-header"><h2>${div.name}</h2><div class="line"></div><span class="badge-gold">PUBLIKVY</span></div>
       <div class="active-grid">
         <div><div class="card" style="padding:0;overflow:hidden">
           <table><thead><tr><th>#</th><th>Lag</th><th>S</th><th>V</th><th>F</th><th title="Klotdifferens">KD</th><th>P</th></tr></thead>
@@ -151,7 +143,7 @@ function render(divisions) {
   });
 }
 
-function scrollTo(blockId, navId) {
+function navTo(blockId, navId) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById(navId)?.classList.add('active');
   document.getElementById(blockId)?.scrollIntoView({ behavior: 'smooth' });
