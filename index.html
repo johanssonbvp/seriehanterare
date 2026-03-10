@@ -6,33 +6,47 @@
 <title>Pétanque – Seriespelshanterare</title>
 <style>
   :root {
-    --bg: #0d0f14;
-    --bg2: #13161e;
-    --bg3: #1a1e2a;
-    --border: #252a38;
-    --accent: #6366f1;
-    --accent2: #818cf8;
-    --gold: #f59e0b;
-    --green: #22c55e;
-    --red: #ef4444;
-    --text: #e2e8f0;
-    --muted: #64748b;
+    --bg: #0d0f14; --bg2: #13161e; --bg3: #1a1e2a; --border: #252a38;
+    --accent: #6366f1; --accent2: #818cf8; --gold: #f59e0b;
+    --green: #22c55e; --red: #ef4444; --text: #e2e8f0; --muted: #64748b;
     --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
-
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; } 
+  ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg2); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* LOGIN OVERLAY */
+  .login-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 999;
+  }
+  .login-box {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 1rem;
+    padding: 2.5rem; width: 100%; max-width: 360px; box-shadow: var(--card-shadow);
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+  .login-logo { font-size: 1.4rem; font-weight: 900; color: var(--accent2); text-align: center; }
+  .login-logo span { color: var(--gold); }
+  .login-subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-top: -0.75rem; }
+  .login-field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .login-field label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .login-field input { background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: 0.5rem; padding: 0.65rem 0.85rem; font-size: 0.95rem; outline: none; transition: border 0.15s; }
+  .login-field input:focus { border-color: var(--accent); }
+  .login-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: var(--red); font-size: 0.8rem; padding: 0.5rem 0.75rem; border-radius: 0.4rem; text-align: center; display: none; }
+  .login-error.show { display: block; }
+  .btn-login { background: var(--accent); color: #fff; border: none; border-radius: 0.5rem; padding: 0.75rem; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+  .btn-login:hover { background: var(--accent2); }
+  .login-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-size: 0.75rem; }
+  .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .btn-public { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.65rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-public:hover { color: var(--text); border-color: var(--muted); }
 
   /* LAYOUT */
   .app { display: flex; min-height: 100vh; }
   .sidebar { width: 220px; min-width: 220px; background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 1.5rem 1rem; gap: 0.5rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
   .main { flex: 1; padding: 2rem; overflow-x: hidden; }
-
-  /* SIDEBAR */
   .sidebar-logo { font-size: 1.1rem; font-weight: 900; color: var(--accent2); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
   .sidebar-logo span { color: var(--gold); }
   .nav-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
@@ -42,38 +56,29 @@
   .nav-item.active .nav-dot { background: var(--accent); }
   .nav-section { font-size: 0.65rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin: 1rem 0 0.3rem 0.75rem; }
   .sidebar-footer { margin-top: auto; }
-
-  /* MODE TOGGLE */
   .mode-toggle { display: flex; background: var(--bg3); border-radius: 0.5rem; padding: 3px; border: 1px solid var(--border); }
   .mode-btn { flex: 1; padding: 0.4rem; border-radius: 0.35rem; font-size: 0.75rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; background: none; color: var(--muted); }
   .mode-btn.active { background: var(--accent); color: #fff; }
+  .session-info { font-size: 0.72rem; color: var(--muted); text-align: center; margin-bottom: 0.5rem; }
+  .btn-logout { width: 100%; background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 0.5rem; padding: 0.45rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.15s; margin-top: 0.4rem; }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-  /* HEADER */
+  /* ADMIN-ONLY BADGE in sidebar */
+  .admin-badge { font-size: 0.6rem; font-weight: 700; background: rgba(99,102,241,0.15); color: var(--accent2); border: 1px solid rgba(99,102,241,0.2); padding: 0.1rem 0.4rem; border-radius: 9999px; margin-left: auto; }
+
   .page-header { margin-bottom: 2rem; }
   .page-header h1 { font-size: 1.8rem; font-weight: 900; color: var(--text); }
   .page-header p { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
-
-  /* CARDS */
   .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 0.75rem; padding: 1.5rem; box-shadow: var(--card-shadow); }
   .card-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-  .card-title svg { color: var(--accent2); }
-
-  /* SETUP GRID */
   .setup-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; }
   @media(max-width:900px) { .setup-grid { grid-template-columns: 1fr; } .sidebar { display: none; } }
-
-  /* INPUTS */
   .input-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-  input[type="text"], input[type="number"], select {
-    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
-    border-radius: 0.5rem; padding: 0.55rem 0.75rem; font-size: 0.9rem; outline: none; transition: border 0.15s;
-  }
+  input[type="text"], input[type="number"], select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); border-radius: 0.5rem; padding: 0.55rem 0.75rem; font-size: 0.9rem; outline: none; transition: border 0.15s; }
   input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
   input[type="text"] { flex: 1; }
   select { flex: 1; }
   input[type="number"] { width: 64px; text-align: center; }
-
-  /* BUTTONS */
   .btn { padding: 0.55rem 1.1rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer; transition: all 0.15s; }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-primary:hover { background: var(--accent2); }
@@ -84,30 +89,22 @@
   .btn-ghost { background: var(--bg3); color: var(--muted); border: 1px solid var(--border); }
   .btn-ghost:hover { color: var(--text); }
   .btn-xl { padding: 1rem 2rem; font-size: 1rem; border-radius: 0.75rem; width: 100%; margin-top: 1.5rem; letter-spacing: 0.05em; }
-
-  /* DIVISION PILL */
   .div-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg3); border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; margin-bottom: 0.4rem; }
   .div-item span { font-weight: 600; font-size: 0.9rem; }
   .remove-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0 0.2rem; transition: color 0.15s; }
   .remove-btn:hover { color: var(--red); }
-
-  /* PREVIEW CARDS */
   .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
   .preview-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 0.6rem; padding: 1rem; }
   .preview-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
   .preview-card-header span { font-weight: 700; color: var(--accent2); font-size: 0.9rem; }
   .team-badge { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 0.35rem; padding: 0.25rem 0.5rem; font-size: 0.75rem; margin: 0.15rem; }
   .meetings-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; font-size: 0.75rem; color: var(--muted); padding-top: 0.5rem; border-top: 1px solid var(--border); }
-
-  /* ACTIVE SECTION */
   .division-block { margin-bottom: 3rem; scroll-margin-top: 2rem; }
   .division-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
   .division-header h2 { font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; }
   .division-header .line { flex: 1; height: 1px; background: var(--border); }
   .active-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem; }
   @media(max-width:1100px) { .active-grid { grid-template-columns: 1fr; } }
-
-  /* TABLE */
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   thead th { background: var(--bg3); color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.6rem 0.75rem; text-align: center; border-bottom: 1px solid var(--border); }
   thead th:first-child, thead th:nth-child(2) { text-align: left; }
@@ -121,8 +118,6 @@
   .gold-row td:nth-child(2)::before { content: '👑 '; }
   .diff-pos { color: var(--green); }
   .diff-neg { color: var(--red); }
-
-  /* ROUNDS */
   .rounds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
   .round-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 0.75rem; overflow: hidden; transition: border-color 0.2s; }
   .round-card.done { border-color: rgba(34,197,94,0.3); }
@@ -137,24 +132,18 @@
   .team-name.right { text-align: right; }
   .score-area { display: flex; align-items: center; gap: 0.3rem; min-width: 88px; justify-content: center; }
   .score-input { width: 36px; height: 32px; text-align: center; padding: 0; font-weight: 700; font-size: 0.9rem; border-radius: 0.4rem; }
-  .score-sep { color: var(--border); font-weight: 700; }
   .score-display { display: flex; align-items: center; gap: 0.4rem; font-weight: 900; font-size: 1rem; }
   .score-display .s { min-width: 24px; text-align: center; }
   .score-display .home-win { color: var(--green); }
   .score-display .away-win { color: var(--red); }
   .score-display .sep { color: var(--border); font-size: 0.75rem; }
   .no-result { color: var(--muted); font-size: 0.8rem; }
-
-  /* BOTTOM BAR */
   .bottom-bar { position: fixed; bottom: 0; left: 220px; right: 0; background: rgba(13,15,20,0.9); backdrop-filter: blur(12px); border-top: 1px solid var(--border); padding: 0.75rem 2rem; display: flex; gap: 1rem; justify-content: flex-end; z-index: 100; }
   @media(max-width:900px) { .bottom-bar { left: 0; } }
-
-  /* UTIL */
   .hidden { display: none !important; }
   .badge { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 9999px; }
   .badge-blue { background: rgba(99,102,241,0.15); color: var(--accent2); border: 1px solid rgba(99,102,241,0.2); }
   .badge-gold { background: rgba(245,158,11,0.15); color: var(--gold); border: 1px solid rgba(245,158,11,0.2); }
-
   @media print {
     .sidebar, .bottom-bar, .no-print { display: none !important; }
     body { background: white; color: black; }
@@ -163,55 +152,67 @@
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- SIDEBAR -->
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">Pétanque <span>Pro</span></div>
+    <p class="login-subtitle">Logga in för att administrera seriespelet</p>
+
+    <div class="login-field">
+      <label>Användarnamn</label>
+      <input type="text" id="login-user" placeholder="admin" onkeydown="if(event.key==='Enter')tryLogin()">
+    </div>
+    <div class="login-field">
+      <label>Lösenord</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')tryLogin()">
+    </div>
+    <div class="login-error" id="login-error">Fel användarnamn eller lösenord.</div>
+    <button class="btn-login" onclick="tryLogin()">Logga in som admin</button>
+
+    <div class="login-divider">eller</div>
+    <button class="btn-public" onclick="enterPublic()">👁 Visa seriespelet (publikläge)</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="display:none">
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-logo">Pétanque <span>Pro</span></div>
     <div id="nav-setup" class="nav-item active" onclick="showSetup()">
       <div class="nav-dot"></div> Inställningar
+      <span class="admin-badge" id="admin-only-badge">ADMIN</span>
     </div>
     <div id="nav-divisions-header" class="nav-section hidden">Divisioner</div>
     <div id="nav-divisions"></div>
     <div class="sidebar-footer">
       <div class="nav-section">Vy</div>
-      <div class="mode-toggle">
+      <div class="mode-toggle" id="mode-toggle-wrap">
         <button class="mode-btn active" id="mb-admin" onclick="setMode('admin')">Admin</button>
         <button class="mode-btn" id="mb-public" onclick="setMode('public')">Publik</button>
       </div>
+      <div class="session-info" id="session-info"></div>
+      <button class="btn-logout" onclick="logout()">Logga ut</button>
     </div>
   </nav>
 
-  <!-- MAIN -->
   <main class="main">
-
-    <!-- SETUP -->
     <div id="setup-section">
       <div class="page-header">
         <h1>Sätt upp seriespel</h1>
         <p>Skapa divisioner, lägg till lag och starta säsongen.</p>
       </div>
       <div class="setup-grid">
-
-        <!-- Divisioner -->
         <div class="card">
-          <div class="card-title">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
-            Divisioner
-          </div>
+          <div class="card-title">Divisioner</div>
           <div class="input-row">
             <input type="text" id="div-input" placeholder="t.ex. Division 1" onkeydown="if(event.key==='Enter')addDivision()">
             <button class="btn btn-primary" onclick="addDivision()">Skapa</button>
           </div>
           <div id="div-list"></div>
         </div>
-
-        <!-- Lag -->
         <div class="card">
-          <div class="card-title">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-            Lägg till lag
-          </div>
+          <div class="card-title">Lägg till lag</div>
           <div class="input-row">
             <input type="text" id="team-input" placeholder="Lagnamn" onkeydown="if(event.key==='Enter')addTeam()">
             <select id="div-select"><option value="">Välj division…</option></select>
@@ -222,36 +223,121 @@
             <button class="btn btn-primary btn-xl" onclick="generateAllLeagues()">⚽ STARTA ALLA SERIESPEL</button>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- ACTIVE LEAGUES -->
     <div id="active-leagues-section" class="hidden">
-      <div class="page-header no-print" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
-        <div>
-          <h1>Seriespelet</h1>
-          <p>Mata in resultat i adminläge. Publikläge visar enbart tabeller och utfall.</p>
-        </div>
+      <div class="page-header no-print">
+        <h1>Seriespelet</h1>
+        <p id="active-subtitle"></p>
       </div>
       <div id="active-leagues-content"></div>
     </div>
-
   </main>
 </div>
 
-<!-- BOTTOM BAR -->
 <div id="bottom-bar" class="bottom-bar hidden">
   <button class="btn btn-ghost" onclick="window.print()">🖨 Skriv ut</button>
-  <button class="btn btn-danger" onclick="resetAll()">Nollställ allt</button>
+  <button class="btn btn-danger" id="reset-btn" onclick="resetAll()">Nollställ allt</button>
 </div>
 
 <script>
+// ─── CREDENTIALS (change these!) ───────────────────────────
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'petanque123';
+// ───────────────────────────────────────────────────────────
+
 let divisions = [];
-let viewMode = 'admin';
+let viewMode = 'public';
+let isAdmin = false;
+
+// ─── AUTH ─────────────────────────────────────────────────
+function tryLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    isAdmin = true;
+    viewMode = 'admin';
+    err.classList.remove('show');
+    enterApp();
+  } else {
+    err.classList.add('show');
+    document.getElementById('login-pass').value = '';
+  }
+}
+function enterPublic() {
+  isAdmin = false;
+  viewMode = 'public';
+  enterApp();
+}
+function enterApp() {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  applyRoleUI();
+  updateSetupUI();
+}
+function logout() {
+  isAdmin = false;
+  viewMode = 'public';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-overlay').style.display = 'flex';
+}
+
+function applyRoleUI() {
+  // Setup section only accessible to admin
+  document.getElementById('nav-setup').classList.toggle('hidden', !isAdmin);
+  document.getElementById('mode-toggle-wrap').classList.toggle('hidden', !isAdmin);
+  document.getElementById('reset-btn').classList.toggle('hidden', !isAdmin);
+
+  if (isAdmin) {
+    document.getElementById('session-info').textContent = `Inloggad som ${ADMIN_USER}`;
+    document.getElementById('mb-admin').classList.add('active');
+    document.getElementById('mb-public').classList.remove('active');
+    document.getElementById('active-subtitle').textContent = 'Adminläge: mata in resultat. Byt till Publik för att se publik vy.';
+  } else {
+    document.getElementById('session-info').textContent = 'Publikläge';
+    document.getElementById('active-subtitle').textContent = 'Publikvy – resultat och tabeller i realtid.';
+    // If no active leagues yet, show a waiting message
+    if (divisions.every(d => d.rounds.length === 0)) {
+      document.getElementById('setup-section').classList.add('hidden');
+      document.getElementById('active-leagues-section').classList.remove('hidden');
+      document.getElementById('active-leagues-content').innerHTML = `
+        <div style="text-align:center;padding:4rem 2rem;color:var(--muted)">
+          <div style="font-size:3rem;margin-bottom:1rem">🎯</div>
+          <p style="font-size:1.1rem;font-weight:600">Seriespelet har inte startat än.</p>
+          <p style="font-size:0.85rem;margin-top:0.5rem">Administratören startar seriespelet och resultaten visas här.</p>
+        </div>`;
+    }
+  }
+
+  // If active leagues exist, go straight there
+  if (divisions.some(d => d.rounds.length > 0)) {
+    document.getElementById('setup-section').classList.add('hidden');
+    document.getElementById('active-leagues-section').classList.remove('hidden');
+    document.getElementById('bottom-bar').classList.remove('hidden');
+    document.getElementById('nav-divisions-header').classList.remove('hidden');
+    renderActiveLeagues();
+  } else if (isAdmin) {
+    showSetup();
+  }
+}
+
+function setMode(m) {
+  if (!isAdmin) return;
+  viewMode = m;
+  document.getElementById('mb-admin').classList.toggle('active', m === 'admin');
+  document.getElementById('mb-public').classList.toggle('active', m === 'public');
+  if (!document.getElementById('active-leagues-section').classList.contains('hidden'))
+    renderActiveLeagues();
+}
 
 // ─── NAVIGATION ───────────────────────────────────────────
 function showSetup() {
+  if (!isAdmin) return;
   document.getElementById('setup-section').classList.remove('hidden');
   document.getElementById('active-leagues-section').classList.add('hidden');
   setNavActive('nav-setup');
@@ -269,13 +355,6 @@ function setNavActive(id) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
-}
-function setMode(m) {
-  viewMode = m;
-  document.getElementById('mb-admin').classList.toggle('active', m === 'admin');
-  document.getElementById('mb-public').classList.toggle('active', m === 'public');
-  if (!document.getElementById('active-leagues-section').classList.contains('hidden'))
-    renderActiveLeagues();
 }
 
 // ─── SETUP ────────────────────────────────────────────────
@@ -311,21 +390,18 @@ function updateMeetings(divId, val) {
 }
 
 function updateSetupUI() {
-  // div list
   document.getElementById('div-list').innerHTML = divisions.map(d => `
     <div class="div-item">
       <span>${d.name}</span>
       <button class="remove-btn" onclick="removeDivision(${d.id})">×</button>
     </div>`).join('');
 
-  // select
   const sel = document.getElementById('div-select');
   const cur = sel.value;
   sel.innerHTML = '<option value="">Välj division…</option>' +
     divisions.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
   sel.value = cur;
 
-  // preview
   document.getElementById('division-preview-container').innerHTML = divisions.map(d => `
     <div class="preview-card">
       <div class="preview-card-header">
@@ -382,7 +458,6 @@ function generateAllLeagues() {
   document.getElementById('bottom-bar').classList.remove('hidden');
   document.getElementById('nav-divisions-header').classList.remove('hidden');
 
-  // Build sidebar nav
   document.getElementById('nav-divisions').innerHTML = divisions.map(d => `
     <div class="nav-item" id="nav-div-${d.id}" onclick="showDivision(${d.id})">
       <div class="nav-dot"></div> ${d.name}
@@ -396,6 +471,8 @@ function generateAllLeagues() {
 function renderActiveLeagues() {
   const cont = document.getElementById('active-leagues-content');
   cont.innerHTML = '';
+  const mode = isAdmin ? viewMode : 'public';
+
   divisions.forEach(div => {
     if (!div.rounds.length) return;
     const block = document.createElement('div');
@@ -405,7 +482,7 @@ function renderActiveLeagues() {
       <div class="division-header">
         <h2>${div.name}</h2>
         <div class="line"></div>
-        ${viewMode === 'public' ? '<span class="badge badge-gold">PUBLIKVY</span>' : ''}
+        ${mode === 'public' ? '<span class="badge badge-gold">PUBLIKVY</span>' : ''}
       </div>
       <div class="active-grid">
         <div>
@@ -413,7 +490,7 @@ function renderActiveLeagues() {
             <table>
               <thead><tr>
                 <th>#</th><th>Lag</th><th title="Spelade">S</th><th title="Vinster">V</th>
-                <th title="Förluster">F</th>                <th title="Klotdifferens">KD</th><th title="Poäng">P</th>
+                <th title="Förluster">F</th><th title="Klotdifferens">KD</th><th title="Poäng">P</th>
               </tr></thead>
               <tbody id="tb-${div.id}"></tbody>
             </table>
@@ -438,10 +515,8 @@ function renderTable(divId) {
     stats[m.home].played++; stats[m.away].played++;
     stats[m.home].gf += hs; stats[m.home].ga += as_;
     stats[m.away].gf += as_; stats[m.away].ga += hs;
-    // No draw in pétanque — must have a winner
     if (hs > as_) { stats[m.home].wins++; stats[m.home].pts += 2; stats[m.away].losses++; }
     else if (as_ > hs) { stats[m.away].wins++; stats[m.away].pts += 2; stats[m.home].losses++; }
-    // If scores are equal we do NOT award points (shouldn't happen in pétanque, but safe fallback)
   }));
 
   const sorted = Object.entries(stats).map(([name, s]) => ({ name, ...s, diff: s.gf - s.ga }))
@@ -465,6 +540,7 @@ function renderRounds(divId) {
   const div = divisions.find(d => d.id === divId);
   const grid = document.getElementById('rg-' + divId);
   if (!grid) return;
+  const mode = isAdmin ? viewMode : 'public';
 
   grid.innerHTML = div.rounds.map((round, rIdx) => {
     const total = round.length;
@@ -474,19 +550,16 @@ function renderRounds(divId) {
 
     const matchesHTML = round.map((m, mIdx) => {
       const hasResult = m.homeScore !== null && m.awayScore !== null;
-
       let scoreHTML;
-      if (viewMode === 'admin') {
+      if (mode === 'admin') {
         scoreHTML = `
           <div class="score-area">
             <input type="number" class="score-input" min="0"
-              value="${m.homeScore !== null ? m.homeScore : ''}"
-              placeholder="-"
+              value="${m.homeScore !== null ? m.homeScore : ''}" placeholder="-"
               onchange="setScore(${divId},${rIdx},${mIdx},'home',this.value)">
             <span class="score-sep">–</span>
             <input type="number" class="score-input" min="0"
-              value="${m.awayScore !== null ? m.awayScore : ''}"
-              placeholder="-"
+              value="${m.awayScore !== null ? m.awayScore : ''}" placeholder="-"
               onchange="setScore(${divId},${rIdx},${mIdx},'away',this.value)">
           </div>`;
       } else {
@@ -504,7 +577,6 @@ function renderRounds(divId) {
           scoreHTML = `<div class="score-area"><span class="no-result">vs</span></div>`;
         }
       }
-
       return `
         <div class="match-row">
           <span class="team-name right">${m.home}</span>
@@ -526,6 +598,7 @@ function renderRounds(divId) {
 }
 
 function setScore(divId, rIdx, mIdx, side, val) {
+  if (!isAdmin) return;
   const div = divisions.find(d => d.id === divId);
   const score = val === '' ? null : parseInt(val);
   if (side === 'home') div.rounds[rIdx][mIdx].homeScore = score;
@@ -535,6 +608,7 @@ function setScore(divId, rIdx, mIdx, side, val) {
 }
 
 function resetAll() {
+  if (!isAdmin) return;
   if (!confirm('Nollställ allt? Alla divisioner, lag och resultat tas bort.')) return;
   divisions = [];
   viewMode = 'admin';
