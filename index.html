@@ -33,15 +33,15 @@
   .division-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;}
   .division-header h2{font-size:1.5rem;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;}
   .division-header .line{flex:1;height:1px;background:var(--border);}
-  .active-grid{display:grid;grid-template-columns:280px 1fr;gap:1.5rem;}
+  .active-grid{display:grid;grid-template-columns:300px 1fr;gap:1.5rem;}
   @media(max-width:1100px){.active-grid{grid-template-columns:1fr;}}
-  table{width:100%;border-collapse:collapse;font-size:0.85rem;}
-  thead th{background:var(--bg3);color:var(--muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;padding:0.6rem 0.75rem;text-align:center;border-bottom:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:0.82rem;}
+  thead th{background:var(--bg3);color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;padding:0.6rem 0.5rem;text-align:center;border-bottom:1px solid var(--border);}
   thead th:first-child,thead th:nth-child(2){text-align:left;}
   tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
   tbody tr:hover{background:var(--bg3);}tbody tr:last-child{border-bottom:none;}
-  td{padding:0.65rem 0.75rem;text-align:center;}
-  td:first-child{text-align:left;color:var(--muted);font-weight:700;font-size:0.75rem;width:32px;}
+  td{padding:0.6rem 0.5rem;text-align:center;}
+  td:first-child{text-align:left;color:var(--muted);font-weight:700;font-size:0.72rem;width:28px;}
   td:nth-child(2){text-align:left;font-weight:600;}
   .pts-cell{font-weight:800;color:var(--accent2);background:rgba(99,102,241,0.08);}
   .gold-row td:nth-child(2)::before{content:'👑 ';}
@@ -54,16 +54,24 @@
   .done-badge{font-size:0.65rem;font-weight:700;color:var(--green);background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);padding:0.1rem 0.5rem;border-radius:9999px;}
   .progress-bar{height:3px;background:var(--border);}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));}
-  .round-body{padding:0.75rem;display:flex;flex-direction:column;gap:0.6rem;}
-  .match-row{display:flex;align-items:center;gap:0.4rem;}
-  .team-name{flex:1;font-size:0.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .team-name.right{text-align:right;}
-  .score-area{display:flex;align-items:center;min-width:88px;justify-content:center;}
-  .score-display{display:flex;align-items:center;gap:0.4rem;font-weight:900;font-size:1rem;}
-  .score-display .s{min-width:24px;text-align:center;}
-  .home-win{color:var(--green);}.away-win{color:var(--red);}
-  .score-display .sep{color:var(--border);font-size:0.75rem;}
-  .no-result{color:var(--muted);font-size:0.8rem;}
+  .round-body{padding:0.75rem;display:flex;flex-direction:column;gap:0.75rem;}
+  .match-card{background:var(--bg3);border:1px solid var(--border);border-radius:0.6rem;overflow:hidden;}
+  .match-teams{display:flex;align-items:center;padding:0.5rem 0.75rem;gap:0.5rem;border-bottom:1px solid var(--border);}
+  .match-team{flex:1;font-size:0.82rem;font-weight:700;}
+  .match-team.right{text-align:right;}
+  .match-set-score{font-size:1rem;font-weight:900;min-width:40px;text-align:center;color:var(--accent2);}
+  .sets-area{padding:0.5rem 0.75rem;display:flex;flex-direction:column;gap:0.3rem;}
+  .set-row-pub{display:flex;align-items:center;gap:0.5rem;font-size:0.78rem;}
+  .set-label-pub{color:var(--muted);font-weight:700;width:36px;flex-shrink:0;font-size:0.68rem;text-transform:uppercase;}
+  .set-score-pub{font-weight:800;display:flex;align-items:center;gap:0.3rem;margin:0 auto;}
+  .set-score-pub .sh{min-width:22px;text-align:right;}
+  .set-score-pub .sa{min-width:22px;text-align:left;}
+  .set-score-pub .sep{color:var(--border);font-size:0.7rem;}
+  .win-h{color:var(--green);}.win-a{color:var(--red);}
+  .set-winner-pub{font-size:0.68rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:9999px;margin-left:auto;}
+  .set-winner-pub.home{background:rgba(34,197,94,0.15);color:var(--green);}
+  .set-winner-pub.away{background:rgba(239,68,68,0.15);color:var(--red);}
+  .no-result-pub{color:var(--muted);font-size:0.75rem;padding:0.25rem 0;}
   .empty-state{text-align:center;padding:5rem 2rem;color:var(--muted);}
   .empty-state .icon{font-size:3.5rem;margin-bottom:1rem;}
   .empty-state h2{font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;color:var(--text);}
@@ -87,7 +95,6 @@
   </main>
 </div>
 
-<!-- Firebase laddas sist i body, innan script -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 <script>
@@ -101,41 +108,54 @@ const firebaseConfig = {
   appId: "1:672666417012:web:93613783fe51cd2ce81e21"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+firebase.database().ref('petanque').on('value', snap => render(snap.val() || []));
 
-db.ref('petanque').on('value', snap => {
-  render(snap.val() || []);
-});
+function calcMatch(m) {
+  let hS=0,aS=0,hK=0,aK=0;
+  [m.s1,m.s2,m.s3].forEach((s,i)=>{
+    if(!s||s.h===null||s.a===null) return;
+    if(i===2){
+      const r1=m.s1,r2=m.s2;
+      if(!r1||!r2||r1.h===null||r2.h===null) return;
+      const hs12=(r1.h>r1.a?1:0)+(r2.h>r2.a?1:0);
+      const as12=(r1.a>r1.h?1:0)+(r2.a>r2.h?1:0);
+      if(hs12!==1||as12!==1) return;
+    }
+    hK+=s.h; aK+=s.a;
+    if(s.h>s.a) hS++; else aS++;
+  });
+  return {hS,aS,hK,aK};
+}
+function matchWinner(m) {
+  const {hS,aS}=calcMatch(m);
+  if(hS===2) return 'home'; if(aS===2) return 'away'; return null;
+}
 
 function render(divisions) {
-  const cont = document.getElementById('content');
-  cont.innerHTML = '';
-  const active = divisions.filter(d => d.rounds && d.rounds.length > 0);
-  if (active.length === 0) {
-    cont.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">🎯</div>
-        <h2>Seriespelet har inte startat än</h2>
-        <p>Resultaten visas här automatiskt så fort administratören startar seriespelet.</p>
-      </div>`;
+  const cont=document.getElementById('content');
+  cont.innerHTML='';
+  const active=divisions.filter(d=>d.rounds&&d.rounds.length>0);
+  if(active.length===0){
+    cont.innerHTML=`<div class="empty-state"><div class="icon">🎯</div><h2>Seriespelet har inte startat än</h2><p>Resultaten visas här automatiskt så fort administratören startar seriespelet.</p></div>`;
     document.getElementById('nav-div-header').classList.add('hidden');
-    document.getElementById('nav-divisions').innerHTML = '';
+    document.getElementById('nav-divisions').innerHTML='';
     return;
   }
   document.getElementById('nav-div-header').classList.remove('hidden');
-  document.getElementById('nav-divisions').innerHTML = active.map(d => `
+  document.getElementById('nav-divisions').innerHTML=active.map(d=>`
     <div class="nav-item" id="nav-div-${d.id}" onclick="navTo('div-block-${d.id}','nav-div-${d.id}')">
       <div class="nav-dot"></div> ${d.name}
     </div>`).join('');
-  active.forEach(div => {
-    const block = document.createElement('div');
-    block.className = 'division-block'; block.id = 'div-block-' + div.id;
-    block.innerHTML = `
+  active.forEach(div=>{
+    const block=document.createElement('div');
+    block.className='division-block'; block.id='div-block-'+div.id;
+    block.innerHTML=`
       <div class="division-header"><h2>${div.name}</h2><div class="line"></div><span class="badge-gold">PUBLIKVY</span></div>
       <div class="active-grid">
         <div><div class="card" style="padding:0;overflow:hidden">
-          <table><thead><tr><th>#</th><th>Lag</th><th>S</th><th>V</th><th>F</th><th title="Klotdifferens">KD</th><th>P</th></tr></thead>
-          <tbody id="tb-${div.id}"></tbody></table></div></div>
+          <table><thead><tr>
+            <th>#</th><th>Lag</th><th>S</th><th>V</th><th>F</th><th title="Setskillnad">SS</th><th title="Klotdifferens">KD</th><th>P</th>
+          </tr></thead><tbody id="tb-${div.id}"></tbody></table></div></div>
         <div class="rounds-grid" id="rg-${div.id}"></div>
       </div>`;
     cont.appendChild(block);
@@ -143,67 +163,92 @@ function render(divisions) {
   });
 }
 
-function navTo(blockId, navId) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+function navTo(blockId,navId) {
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById(navId)?.classList.add('active');
-  document.getElementById(blockId)?.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById(blockId)?.scrollIntoView({behavior:'smooth'});
 }
 
 function renderTable(div) {
-  const stats = {};
-  div.teams.forEach(t => stats[t] = { played:0,wins:0,losses:0,gf:0,ga:0,pts:0 });
-  div.rounds.forEach(round => round.forEach(m => {
-    if(m.homeScore===null||m.awayScore===null) return;
-    const hs=m.homeScore, as_=m.awayScore;
+  const stats={};
+  div.teams.forEach(t=>stats[t]={played:0,wins:0,losses:0,setsFor:0,setsAgainst:0,klotsFor:0,klotsAgainst:0,pts:0});
+  div.rounds.forEach(round=>round.forEach(m=>{
+    const w=matchWinner(m); if(!w) return;
+    const {hS,aS,hK,aK}=calcMatch(m);
     stats[m.home].played++; stats[m.away].played++;
-    stats[m.home].gf+=hs; stats[m.home].ga+=as_;
-    stats[m.away].gf+=as_; stats[m.away].ga+=hs;
-    if(hs>as_){stats[m.home].wins++;stats[m.home].pts+=2;stats[m.away].losses++;}
-    else if(as_>hs){stats[m.away].wins++;stats[m.away].pts+=2;stats[m.home].losses++;}
+    stats[m.home].setsFor+=hS; stats[m.home].setsAgainst+=aS;
+    stats[m.away].setsFor+=aS; stats[m.away].setsAgainst+=hS;
+    stats[m.home].klotsFor+=hK; stats[m.home].klotsAgainst+=aK;
+    stats[m.away].klotsFor+=aK; stats[m.away].klotsAgainst+=hK;
+    if(w==='home'){stats[m.home].wins++;stats[m.home].pts+=2;stats[m.away].losses++;}
+    else{stats[m.away].wins++;stats[m.away].pts+=2;stats[m.home].losses++;}
   }));
-  const sorted = Object.entries(stats).map(([name,s])=>({name,...s,diff:s.gf-s.ga}))
-    .sort((a,b)=>b.pts-a.pts||b.diff-a.diff||b.gf-a.gf);
-  const tbody = document.getElementById('tb-'+div.id);
+  const sorted=Object.entries(stats).map(([name,s])=>({name,...s,
+    setDiff:s.setsFor-s.setsAgainst,klotDiff:s.klotsFor-s.klotsAgainst
+  })).sort((a,b)=>b.pts-a.pts||b.setDiff-a.setDiff||b.klotDiff-a.klotDiff||b.klotsFor-a.klotsFor);
+  const tbody=document.getElementById('tb-'+div.id);
   if(!tbody) return;
-  tbody.innerHTML = sorted.map((t,i)=>`
+  tbody.innerHTML=sorted.map((t,i)=>`
     <tr class="${i===0&&t.pts>0?'gold-row':''}">
       <td>${i+1}</td><td>${t.name}</td><td>${t.played}</td>
       <td style="color:var(--green)">${t.wins}</td>
       <td style="color:var(--red)">${t.losses}</td>
-      <td class="${t.diff>0?'diff-pos':t.diff<0?'diff-neg':''}">${t.diff>0?'+':''}${t.diff}</td>
+      <td class="${t.setDiff>0?'diff-pos':t.setDiff<0?'diff-neg':''}">${t.setDiff>0?'+':''}${t.setDiff}</td>
+      <td class="${t.klotDiff>0?'diff-pos':t.klotDiff<0?'diff-neg':''}">${t.klotDiff>0?'+':''}${t.klotDiff}</td>
       <td class="pts-cell">${t.pts}</td>
     </tr>`).join('');
 }
 
 function renderRounds(div) {
-  const grid = document.getElementById('rg-'+div.id);
+  const grid=document.getElementById('rg-'+div.id);
   if(!grid) return;
-  grid.innerHTML = div.rounds.map((round,rIdx) => {
+  grid.innerHTML=div.rounds.map((round,rIdx)=>{
     const total=round.length;
-    const done=round.filter(m=>m.homeScore!==null&&m.awayScore!==null).length;
+    const done=round.filter(m=>matchWinner(m)!==null).length;
     const allDone=done===total;
-    const matchesHTML = round.map(m => {
-      const has=m.homeScore!==null&&m.awayScore!==null;
-      const scoreHTML = has
-        ? `<div class="score-area"><div class="score-display">
-            <span class="s ${m.homeScore>m.awayScore?'home-win':''}">${m.homeScore}</span>
+    const matchesHTML=round.map(m=>{
+      const {hS,aS}=calcMatch(m);
+      const w=matchWinner(m);
+      const sets=[m.s1,m.s2,m.s3];
+      const setLabels=['Set 1','Set 2','Set 3'];
+      const need3 = m.s1.h!==null&&m.s1.a!==null&&m.s2.h!==null&&m.s2.a!==null &&
+        (m.s1.h>m.s1.a?1:0)+(m.s2.h>m.s2.a?1:0)===1;
+      const setsHTML=sets.map((s,i)=>{
+        if(i===2&&!need3&&(!s||s.h===null)) return '';
+        const has=s&&s.h!==null&&s.a!==null;
+        if(!has) return `<div class="set-row-pub"><span class="set-label-pub">${setLabels[i]}</span><span class="no-result-pub">Ej spelat</span></div>`;
+        const sv=s.h>s.a?'home':s.a>s.h?'away':null;
+        return `<div class="set-row-pub">
+          <span class="set-label-pub">${setLabels[i]}</span>
+          <div class="set-score-pub">
+            <span class="sh ${sv==='home'?'win-h':''}">${s.h}</span>
             <span class="sep">–</span>
-            <span class="s ${m.awayScore>m.homeScore?'away-win':''}">${m.awayScore}</span>
-           </div></div>`
-        : `<div class="score-area"><span class="no-result">vs</span></div>`;
-      return `<div class="match-row">
-        <span class="team-name right">${m.home}</span>${scoreHTML}<span class="team-name">${m.away}</span>
+            <span class="sa ${sv==='away'?'win-a':''}">${s.a}</span>
+          </div>
+          ${sv?`<span class="set-winner-pub ${sv}">${sv==='home'?m.home:m.away}</span>`:''}
+        </div>`;
+      }).join('');
+      return `<div class="match-card">
+        <div class="match-teams">
+          <span class="match-team right ${w==='home'?'win-h':w==='away'?'':''}">
+            ${w==='home'?'✓ ':''}${m.home}
+          </span>
+          <span class="match-set-score">${w?hS+' – '+aS:'– –'}</span>
+          <span class="match-team ${w==='away'?'win-a':''}">
+            ${w==='away'?'✓ ':''}${m.away}
+          </span>
+        </div>
+        <div class="sets-area">${setsHTML}</div>
       </div>`;
     }).join('');
-    return `
-      <div class="round-card ${allDone?'done':''}">
-        <div class="round-header">
-          <span class="round-label">Omgång ${rIdx+1}</span>
-          ${allDone?'<span class="done-badge">✓ Klar</span>':`<span style="font-size:0.7rem;color:var(--muted)">${done}/${total}</span>`}
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${total?Math.round(done/total*100):0}%"></div></div>
-        <div class="round-body">${matchesHTML}</div>
-      </div>`;
+    return `<div class="round-card ${allDone?'done':''}">
+      <div class="round-header">
+        <span class="round-label">Omgång ${rIdx+1}</span>
+        ${allDone?'<span class="done-badge">✓ Klar</span>':`<span style="font-size:0.7rem;color:var(--muted)">${done}/${total}</span>`}
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${total?Math.round(done/total*100):0}%"></div></div>
+      <div class="round-body">${matchesHTML}</div>
+    </div>`;
   }).join('');
 }
 </script>
