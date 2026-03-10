@@ -4,16 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pétanque Pro – Seriespelet</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js" defer></script>
 <style>
-  :root {
-    --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e2a;--border:#252a38;
-    --accent:#6366f1;--accent2:#818cf8;--gold:#f59e0b;
-    --green:#22c55e;--red:#ef4444;--text:#e2e8f0;--muted:#64748b;
-  }
+  :root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e2a;--border:#252a38;--accent:#6366f1;--accent2:#818cf8;--gold:#f59e0b;--green:#22c55e;--red:#ef4444;--text:#e2e8f0;--muted:#64748b;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
   ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-track{background:var(--bg2);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-
   .app{display:flex;min-height:100vh;}
   .sidebar{width:220px;min-width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;gap:0.5rem;position:sticky;top:0;height:100vh;overflow-y:auto;}
   .main{flex:1;padding:2rem;overflow-x:hidden;}
@@ -26,8 +23,9 @@
   .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;}
   .nav-item.active .nav-dot{background:var(--accent);}
   .nav-section{font-size:0.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin:1rem 0 0.3rem 0.75rem;}
-  .sidebar-footer{margin-top:auto;font-size:0.72rem;color:var(--muted);text-align:center;}
-
+  .sidebar-footer{margin-top:auto;font-size:0.72rem;color:var(--muted);text-align:center;padding-top:1rem;border-top:1px solid var(--border);}
+  .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:0.3rem;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
   .page-header{margin-bottom:2rem;}
   .page-header h1{font-size:1.8rem;font-weight:900;}
   .page-header p{color:var(--muted);font-size:0.9rem;margin-top:0.25rem;}
@@ -43,8 +41,7 @@
   thead th{background:var(--bg3);color:var(--muted);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;padding:0.6rem 0.75rem;text-align:center;border-bottom:1px solid var(--border);}
   thead th:first-child,thead th:nth-child(2){text-align:left;}
   tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s;}
-  tbody tr:hover{background:var(--bg3);}
-  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--bg3);}tbody tr:last-child{border-bottom:none;}
   td{padding:0.65rem 0.75rem;text-align:center;}
   td:first-child{text-align:left;color:var(--muted);font-weight:700;font-size:0.75rem;width:32px;}
   td:nth-child(2){text-align:left;font-weight:600;}
@@ -63,7 +60,7 @@
   .match-row{display:flex;align-items:center;gap:0.4rem;}
   .team-name{flex:1;font-size:0.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .team-name.right{text-align:right;}
-  .score-area{display:flex;align-items:center;gap:0.3rem;min-width:88px;justify-content:center;}
+  .score-area{display:flex;align-items:center;min-width:88px;justify-content:center;}
   .score-display{display:flex;align-items:center;gap:0.4rem;font-weight:900;font-size:1rem;}
   .score-display .s{min-width:24px;text-align:center;}
   .home-win{color:var(--green);}.away-win{color:var(--red);}
@@ -72,8 +69,8 @@
   .empty-state{text-align:center;padding:5rem 2rem;color:var(--muted);}
   .empty-state .icon{font-size:3.5rem;margin-bottom:1rem;}
   .empty-state h2{font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;color:var(--text);}
-  .hidden{display:none!important;}
-  @media print{.sidebar{display:none!important;}body{background:white;color:black;}.card,.round-card{box-shadow:none;border:1px solid #ddd;}}
+  .loading{text-align:center;padding:4rem;color:var(--muted);font-size:0.9rem;}
+  @media print{.sidebar{display:none!important;}body{background:white;color:black;}}
 </style>
 </head>
 <body>
@@ -82,39 +79,47 @@
     <div class="sidebar-logo">Pétanque <span>Pro</span></div>
     <div class="nav-section hidden" id="nav-div-header">Divisioner</div>
     <div id="nav-divisions"></div>
-    <div class="sidebar-footer">Publikvy 👁</div>
+    <div class="sidebar-footer"><span class="live-dot"></span>Live-uppdatering</div>
   </nav>
-
   <main class="main">
     <div class="page-header">
       <h1>Seriespelet</h1>
-      <p>Live-tabeller och resultat</p>
+      <p>Live-tabeller och resultat — uppdateras automatiskt</p>
     </div>
-    <div id="content"></div>
+    <div id="content"><div class="loading">Laddar data…</div></div>
   </main>
 </div>
 
 <script>
-const STORAGE_KEY = 'petanque_data';
-let divisions = [];
+const firebaseConfig = {
+  apiKey: "AIzaSyAw-cizjTdKHd3-FOmxyaXvD-vQTum-NSk",
+  authDomain: "databas-serie.firebaseapp.com",
+  databaseURL: "https://databas-serie-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "databas-serie",
+  storageBucket: "databas-serie.firebasestorage.app",
+  messagingSenderId: "672666417012",
+  appId: "1:672666417012:web:93613783fe51cd2ce81e21"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-function load() {
-  try { divisions = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { divisions = []; }
-}
+// Lyssnar i realtid — uppdateras direkt när admin sparar
+db.ref('petanque').on('value', snap => {
+  const divisions = snap.val() || [];
+  render(divisions);
+});
 
-function render() {
-  load();
+function render(divisions) {
   const cont = document.getElementById('content');
   cont.innerHTML = '';
-
-  const active = divisions.filter(d => d.rounds.length > 0);
+  const active = divisions.filter(d => d.rounds && d.rounds.length > 0);
 
   if (active.length === 0) {
     cont.innerHTML = `
       <div class="empty-state">
         <div class="icon">🎯</div>
         <h2>Seriespelet har inte startat än</h2>
-        <p>Resultaten visas här så fort administratören startat seriespelet.</p>
+        <p>Resultaten visas här automatiskt så fort administratören startar seriespelet.</p>
       </div>`;
     document.getElementById('nav-div-header').classList.add('hidden');
     document.getElementById('nav-divisions').innerHTML = '';
@@ -156,18 +161,18 @@ function renderTable(div) {
   const stats = {};
   div.teams.forEach(t => stats[t] = { played:0,wins:0,losses:0,gf:0,ga:0,pts:0 });
   div.rounds.forEach(round => round.forEach(m => {
-    if (m.homeScore===null||m.awayScore===null) return;
+    if(m.homeScore===null||m.awayScore===null) return;
     const hs=m.homeScore, as_=m.awayScore;
     stats[m.home].played++; stats[m.away].played++;
     stats[m.home].gf+=hs; stats[m.home].ga+=as_;
     stats[m.away].gf+=as_; stats[m.away].ga+=hs;
-    if (hs>as_){stats[m.home].wins++;stats[m.home].pts+=2;stats[m.away].losses++;}
+    if(hs>as_){stats[m.home].wins++;stats[m.home].pts+=2;stats[m.away].losses++;}
     else if(as_>hs){stats[m.away].wins++;stats[m.away].pts+=2;stats[m.home].losses++;}
   }));
   const sorted = Object.entries(stats).map(([name,s])=>({name,...s,diff:s.gf-s.ga}))
     .sort((a,b)=>b.pts-a.pts||b.diff-a.diff||b.gf-a.gf);
   const tbody = document.getElementById('tb-'+div.id);
-  if (!tbody) return;
+  if(!tbody) return;
   tbody.innerHTML = sorted.map((t,i)=>`
     <tr class="${i===0&&t.pts>0?'gold-row':''}">
       <td>${i+1}</td><td>${t.name}</td><td>${t.played}</td>
@@ -180,13 +185,13 @@ function renderTable(div) {
 
 function renderRounds(div) {
   const grid = document.getElementById('rg-'+div.id);
-  if (!grid) return;
+  if(!grid) return;
   grid.innerHTML = div.rounds.map((round,rIdx) => {
     const total=round.length;
     const done=round.filter(m=>m.homeScore!==null&&m.awayScore!==null).length;
     const allDone=done===total;
     const matchesHTML = round.map(m => {
-      const has = m.homeScore!==null&&m.awayScore!==null;
+      const has=m.homeScore!==null&&m.awayScore!==null;
       const scoreHTML = has
         ? `<div class="score-area"><div class="score-display">
             <span class="s ${m.homeScore>m.awayScore?'home-win':''}">${m.homeScore}</span>
@@ -195,9 +200,7 @@ function renderRounds(div) {
            </div></div>`
         : `<div class="score-area"><span class="no-result">vs</span></div>`;
       return `<div class="match-row">
-        <span class="team-name right">${m.home}</span>
-        ${scoreHTML}
-        <span class="team-name">${m.away}</span>
+        <span class="team-name right">${m.home}</span>${scoreHTML}<span class="team-name">${m.away}</span>
       </div>`;
     }).join('');
     return `
@@ -211,10 +214,6 @@ function renderRounds(div) {
       </div>`;
   }).join('');
 }
-
-// Initial render + lyssna på ändringar från admin (samma webbläsare)
-render();
-window.addEventListener('storage', e => { if (e.key === STORAGE_KEY) render(); });
 </script>
 </body>
 </html>
